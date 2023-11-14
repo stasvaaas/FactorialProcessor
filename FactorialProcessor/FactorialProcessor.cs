@@ -16,6 +16,7 @@ namespace FactorialProcessor
                 throw new ArgumentOutOfRangeException("param", "Value must be between 1 and 15.");
             }
 
+            List<Thread> _threads = new List<Thread>();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -26,11 +27,12 @@ namespace FactorialProcessor
                 if (parallelMode)
                 {
                     //creating a thread
-                    var thread = new Thread(() => 
+                    var thread = new Thread(() =>
                     {
                         int result = Factorial(n);
                         Console.WriteLine($"Factorial of {n} = {result}");
                     });
+                    _threads.Add(thread);
                     //starting a thread
                     thread.Start();
                 }
@@ -39,6 +41,10 @@ namespace FactorialProcessor
                     int result = Factorial(n);
                     Console.WriteLine($"Factorial of {n} = {result}");
                 }
+            }
+            foreach (Thread thread in _threads)
+            {
+                thread.Join();
             }
             stopwatch.Stop();
             Console.WriteLine($"Execution time: {stopwatch.ElapsedTicks} ticks ({stopwatch.ElapsedMilliseconds} ms)");
