@@ -9,52 +9,60 @@ namespace FactorialProcessor
 {
     class FactorialProcessor
     {
+        private Stopwatch _stopwatch = new Stopwatch();
+        private int _maxValue;
+        private int _counter;
+        private object _lock = new object();
+        ////{
+        //    _stopwatch = new Stopwatch();
+        //}
         public void Go(int param, bool parallelMode)
         {
-            if (param < 1 || param > 15)
+            _maxValue = param;
+            if (parallelMode)
             {
-                throw new ArgumentOutOfRangeException("param", "Value must be between 1 and 15.");
+                StartFactorialParallel(param);
             }
-
-            List<Thread> _threads = new List<Thread>();
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            for (int i = 1; i <= param; i++)
-            {
-                int n = i;
-
-                if (parallelMode)
-                {
-                    //creating a thread
-                    var thread = new Thread(() =>
-                    {
-                        int result = Factorial(n);
-                        Console.WriteLine($"Factorial of {n} = {result}");
-                    });
-                    _threads.Add(thread);
-                    //starting a thread
-                    thread.Start();
-                }
-                else
-                {
-                    int result = Factorial(n);
-                    Console.WriteLine($"Factorial of {n} = {result}");
-                }
-            }
-            foreach (Thread thread in _threads)
-            {
-                thread.Join();
-            }
-            stopwatch.Stop();
-            Console.WriteLine($"Execution time: {stopwatch.ElapsedTicks} ticks ({stopwatch.ElapsedMilliseconds} ms)");
-        }
-        private int Factorial(int n)
-        {
-            if (n == 1)
-                return 1;
             else
-                return n * Factorial(n - 1);
+            {
+                StartFactorialSequential(param);
+            }
         }
+        void StartFactorialSequential(int param)
+        {
+            _stopwatch.Start();
+            for(int i = 0; i < param; i++)
+            {
+                PrintFactorial(i);
+            }
+        }
+
+        void StartFactorialParallel(int param)
+        {
+            _stopwatch.Start();
+            for (int i = 0; i < param; i++)
+            {
+                Thread thread = new Thread(PrintFactorial);
+                thread.Start(i);
+            }
+        }
+
+        private void PrintFactorial(object? n)
+        {
+            int param = (int)n;
+            int result = Factorial(param);
+            Console.WriteLine($"fact of {param} is {result}");
+            if(++_counter == _maxValue)
+             {
+                 _stopwatch.Stop();
+                 Console.WriteLine($"ms {_stopwatch.ElapsedMilliseconds} ticks {_stopwatch.ElapsedTicks}");
+             }
+        }
+        private static int Factorial(int n)
+        {
+            if (n == 1 || n == 0) return 1;
+            return n * Factorial(n - 1);
+        }
+
     }
 }
