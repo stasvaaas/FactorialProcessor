@@ -13,9 +13,10 @@ namespace FactorialProcessor
         private int _maxValue;
         private int _counter;
         private object _lock = new object();
-        ////{
-        //    _stopwatch = new Stopwatch();
-        //}
+        public FactorialProcessor()
+        {
+            _stopwatch = new Stopwatch();
+        }
         public void Go(int param, bool parallelMode)
         {
             _maxValue = param;
@@ -52,11 +53,14 @@ namespace FactorialProcessor
             int param = (int)n;
             int result = Factorial(param);
             Console.WriteLine($"fact of {param} is {result}");
-            if(++_counter == _maxValue)
-             {
-                 _stopwatch.Stop();
-                 Console.WriteLine($"ms {_stopwatch.ElapsedMilliseconds} ticks {_stopwatch.ElapsedTicks}");
-             }
+            lock(_lock)
+            { 
+                if(++_counter == _maxValue)
+                 {
+                     _stopwatch.Stop();
+                     Console.WriteLine($"ms {_stopwatch.ElapsedMilliseconds} ticks {_stopwatch.ElapsedTicks}");
+                 }
+            }
         }
         private static int Factorial(int n)
         {
