@@ -1,16 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FactorialProcessor
 {
     class FactorialProcessor
     {
-        private Stopwatch _stopwatch = new Stopwatch();
+        private Stopwatch _stopwatch;
         private int _maxValue;
         private int _counter;
-        private object _lock = new object();
-
+        private object _lock = new();
+        public FactorialProcessor()
+        {
+            _stopwatch = new Stopwatch();
+        }
         public void Go(int param, bool parallelMode)
         {
             _maxValue = param;
@@ -23,11 +29,10 @@ namespace FactorialProcessor
                 StartFactorialSequential(param);
             }
         }
-
         void StartFactorialSequential(int param)
         {
             _stopwatch.Start();
-            for (int i = 0; i < param; i++)
+            for(int i = 0; i < param; i++)
             {
                 PrintFactorial(i);
             }
@@ -39,29 +44,29 @@ namespace FactorialProcessor
             for (int i = 0; i < param; i++)
             {
                 Thread thread = new Thread(PrintFactorial);
-                thread.Start((object)i);
+                thread.Start(i);
             }
         }
 
         private void PrintFactorial(object? n)
         {
-            int param = (int)n!;
+            int param = (int)n;
             int result = Factorial(param);
             Console.WriteLine($"fact of {param} is {result}");
-            lock (_lock)
-            {
-                if (Interlocked.Increment(ref _counter) == _maxValue)
-                {
-                    _stopwatch.Stop();
-                    Console.WriteLine($"ms {_stopwatch.ElapsedMilliseconds} ticks {_stopwatch.ElapsedTicks}");
-                }
+            lock(_lock)
+            { 
+                if(++_counter == _maxValue)
+                 {
+                     _stopwatch.Stop();
+                     Console.WriteLine($"ms {_stopwatch.ElapsedMilliseconds} ticks {_stopwatch.ElapsedTicks}");
+                 }
             }
         }
-
         private static int Factorial(int n)
         {
             if (n == 1 || n == 0) return 1;
             return n * Factorial(n - 1);
         }
+
     }
 }
